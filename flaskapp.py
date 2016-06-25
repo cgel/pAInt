@@ -23,54 +23,53 @@ def index2():
 def index3():
   return render_template('index3.html')
 
+def log(msg):
+  print("======")
+  print(msg)
+  print("======")
+
 
 # SETUP WEBSOCKET EVENTS 
-@socketio.on('json')
+@socketio.on('transition event')
 def handle_message(json):
   print("======")
   print('transition event: ' + str(json))
   print("======")
-  source_url = json["href"]
+  source_name = json["source_name"]
   #welcome screen
-  if source_url == "index.html":
-    transition_url = "index2.html"
+  if source_name == "index.html":
+    log("transition from index.html")
+    transition_name = "index2.html"
 
   #select painting screen
-  elif source_url == "index2.html":
+  elif source_name == "index2.html":
     #data is the image number
     data = json["data"]
     global image_number
     image_number = data
-    transition_url = "index3.html"
+    transition_name = "index3.html"
 
   #take picture screen
-  elif source_url == "index3.html":
-    transition_url = "index4.html"
+  elif source_name == "index3.html":
+    transition_name = "index4.html"
 
   #accept picture screen
-  elif source_url == "index4.html":
+  elif source_name == "index4.html":
     #data is a bool, accept or reject
     data = json["data"]
     if data:
-      transition_url = "index4.html"
+      transition_name = "index4.html"
     else:
-      transition_url = "index5.html"
+      transition_name = "index5.html"
   else:
     raise Exception("Unknown source: "%source)
-  send(transition_url)
 
-@socketio.on('transition event')
-def handle_message(message):
-  print('recived click event: ' + str(message))
+  log("emiting")
+  emit("load page", transition_name)
+  print('recived click event: ' + str(json))
 
-@socketio.on('connect')
-def test_connect():
-    emit('my response', {'data': 'Connected'})
-
-@socketio.on('disconnect')
-def test_disconnect():
-    print('Client disconnected')
-
-print("================")
-socketio.run(app)
-print("================")
+try:
+  socketio.run(app)
+  socketio.stop()
+except:
+  socketio.stop()
