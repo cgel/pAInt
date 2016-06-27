@@ -1,27 +1,8 @@
 <html>
 <head>
-<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
-<script type="text/javascript" charset="utf-8">
-    var socket = io.connect('http://' + document.domain + ':' + location.port);
-
-    socket.on('connect', 
-             function() { socket.emit('my event', {data: 'I\'m connected!'});
-             });
-
-    socket.on("load page", function (href) {
-      window.location.href = "http://www.google.com";
-    });
-
-    // source is a unique representation of this page, data only used if necessary
-    function transition(source, data) {
-      socket.emit('transition event', {"source":source, "data":data});
-    };
-</script>
 </head>
 <body>
-<div style="margin-top:15%;margin-left:10%;font-color:red;">
-<a style="font-size:25px;" onclick="transition(1, -1)" ><h1>WELCOME, DO YOU WISH TO TAKE A PHOTOGRAPH NOW ?</h1></a>
-<!--<a style="font-size:25px;" href="index2.html"><h1>WELCOME, DO YOU WISH TO TAKE A PHOTOGRAPH NOW ?</h1></a>-->
-</div>
+<a  href="index2.html"><img src="static/imatges/paint1.png"> </a>
+
 </body>
 </html>
