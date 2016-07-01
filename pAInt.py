@@ -139,22 +139,25 @@ class paintDisplay:
         self.carrusel = pygame.image.load("carrusel.jpg")
         self.waiting = pygame.image.load("waiting.jpg")
 
-        self.size = (640, 480)
+        height = 1350
+        width = 1080
+        self.size = (width, height)
         #self.display = pygame.display.set_mode(self.size, pygame.FULLSCREEN, 0)
         self.display = pygame.display.set_mode(self.size, 0)
 
         self.cams = pygame.camera.list_cameras()
         if not self.cams:
             raise NameError("No cameras")
-        self.cam = pygame.camera.Camera(self.cams[-1], self.size)
+        self.cam_size = (1080, 720)
+        self.cam = pygame.camera.Camera(self.cams[-1], self.cam_size)
+
+        self.ratio = float(self.size[1]) / self.cam_size[1]
+        self.cam_scale_size = (int(self.cam_size[0] * self.ratio), int( self.cam_size[1] * self.ratio))
         self.cam.start()
 
-        # create a surface to capture to.  for performance purposes
-        # bit depth is the same as that of the display surface.
-        self.snapshot = pygame.surface.Surface(self.size, 0, self.display)
-
         # what should be displayed at every moment
-        self.display_target = "carrusel"
+        #self.display_target = "carrusel"
+        self.display_target = "webcam"
 
         self.event = threading.Event()
 
@@ -167,7 +170,16 @@ class paintDisplay:
         # set event so that the display transitions
         self.event.set()
 
+    def display_webcam_frame(self):
+        snapshot = self.cam.get_image()
+        snapshot = pygame.transform.scale(snapshot, self.cam_scale_size)
+        self.display.blit(snapshot, (-self.size[0]/2, 0))
+        pygame.display.flip()
+
     def start(self):
+        print(self.size)
+        print(self.cam_size)
+        print(self.cam_scale_size)
         while True:
             if self.display_target == "carrusel":
                 self.display.blit(self.carrusel, (0, 0))
@@ -199,23 +211,14 @@ class paintDisplay:
                     if self.event.isSet():
                         self.event.clear()
                         stop = True
-                    self.snapshot = self.cam.get_image(self.snapshot)
-                    # blit it to the display surface.  simple!
-                    self.display.blit(self.snapshot, (0, 0))
-                    pygame.display.flip()
+                    self.display_webcam_frame()
 
             elif self.display_target == "take picture":
                 start_time = time.time()
                 delay = 1.5
                 while(time.time() - start_time < delay):
-                    self.snapshot = self.cam.get_image(self.snapshot)
-                    # blit it to the display surface.  simple!
-                    self.display.blit(self.snapshot, (0, 0))
-                    pygame.display.flip()
+                    self.display_webcam_frame()
 
-                self.snapshot = self.cam.get_image(self.snapshot)
-                self.display.blit(self.snapshot, (0, 0))
-                pygame.display.flip()
                 self.callback()
                 # save snapshot
 
