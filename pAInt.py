@@ -3,17 +3,22 @@ from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 import threading
 import time
+import random
+import os
+from operator import itemgetter
 
 import pygame
 import pygame.camera
 from pygame.locals import *
+
+import neuralStyle
 
 pygame.init()
 pygame.camera.init()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app)
+socketio = SocketIO(app, ping_timeout=60*60*4)
 
 # transition_flag = threading.Event()
 transition_msg = ""
@@ -64,7 +69,7 @@ def handle_message(json):
 
 class paintServer:
 
-    def __init__(self,   ip="127.0.0.1", port=80, log=False):
+    def __init__(self,   ip="127.0.0.1", port=5000, log=False):
         self.ip = ip
         self.port = port
         self.log = log
@@ -94,7 +99,7 @@ class paintServer:
         if source_name == "index2.html":
             # data is the image number
             data = json["data"]
-            self.image_number = data
+            display.set_style_number(data)
             display.set_display_target("webcam")
 
         # take picture screen
@@ -155,13 +160,22 @@ class paintDisplay:
         self.cam_scale_size = (int(self.cam_size[0] * self.ratio), int( self.cam_size[1] * self.ratio))
         self.cam.start()
 
-        # what should be displayed at every moment
-        #self.display_target = "carrusel"
-        self.display_target = "webcam"
-
         self.event = threading.Event()
 
+        self.style_number = 0
+        self.neural = neuralStyle.neuralStyle()
+        self.webcam_capture_name = "webcam_capture.jpg"
+
+        # what should be displayed at every moment
+        self.display_target = "carrusel"
+
+
+
+    def set_style_number(self, number):
+        self.style_number = number
+
     def default_callback(self):
+        return
         raise NameError("No callback set, but it was called")
 
     def set_display_target(self, target, callback=default_callback):
@@ -177,17 +191,30 @@ class paintDisplay:
         pygame.display.flip()
 
     def start(self):
-        print(self.size)
-        print(self.cam_size)
-        print(self.cam_scale_size)
         while True:
             if self.display_target == "carrusel":
-                self.display.blit(self.carrusel, (0, 0))
-                pygame.display.flip()
+                # load all generated images
+                generated_list = os.listdir("generated")
+                loaded_images = []
+                for generated in generated_list:
+                    loaded_images.append(pygame.image.load("generated/"+generated))
 
-                # timeout in seconds
-                while not self.event.wait(.1):
-                    pass
+                if len(loaded_images) > 0:
+                    #select the last image
+                    index, loaded_image= max(enumerate(loaded_images), key=itemgetter(1))
+                    self.display.blit(loaded_image, (0, 0))
+                    pygame.display.flip()
+                    last_change_t = time.time()
+                    while not self.event.wait(.1):
+                        # if time randomly display a new image
+                        if time.time() - last_change_t > 20.:
+                            last_change_t = time.time()
+                            loaded_image = random.sample(loaded_images, 1)[0]
+                            self.display.blit(loaded_image, (0, 0))
+                            pygame.display.flip()
+                else:
+                    while not self.event.wait(.1):
+                        pass
                 self.event.clear()
                 continue
 
@@ -197,9 +224,8 @@ class paintDisplay:
                 pygame.display.flip()
 
                 # start generating
-                log("starting generation")
-                time.sleep(3)
-                log("generation finished")
+                log(self.style_number)
+                self.neural.generate(self.style_number, self.webcam_capture_name)
 
                 self.callback()
                 self.display_target = "carrusel"
@@ -215,12 +241,13 @@ class paintDisplay:
 
             elif self.display_target == "take picture":
                 start_time = time.time()
-                delay = 1.5
+                delay = 3.
                 while(time.time() - start_time < delay):
                     self.display_webcam_frame()
 
                 self.callback()
                 # save snapshot
+                pygame.image.save(self.display, self.webcam_capture_name)
 
                 while not self.event.wait(.1):
                     pass
@@ -233,7 +260,8 @@ class paintDisplay:
     def __del__(self):
         log("deliting pAInt")
 
-server = paintServer()
+server = paintServer(ip="192.168.42.76")
+#server = paintServer()
 server_thread = threading.Thread(name="server thread",
                                  target=server.start)
 server_thread.setDaemon(True)
