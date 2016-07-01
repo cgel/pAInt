@@ -7,6 +7,8 @@ class neuralStyle:
         self.dir = "/home/cgel/workspace/CNNMRF/"
         self.content_dir = self.dir + "data/content/"
         self.result_dir = self.dir + "data/result/trans/MRF/"
+        # call the full path so that it works when the program is called with sudo
+        self.qlua_path = "/home/cgel/torch/install/bin/qlua"
 
     def generate(self, style_number, content_name):
         # copy the content image to the necessary place
@@ -15,16 +17,19 @@ class neuralStyle:
 
 
         style_name = str(style_number)
-        generate_command = "qlua " + self.dir + "cnnmrf.lua "  + "-style_name " + style_name+ " -content_name content " + ""
-        print(generate_command)
-        #Popen(generate_command, shell=True, cwd=self.dir).wait()
+        generate_command = self.qlua_path + " " + self.dir + "cnnmrf.lua "  + "-style_name " + style_name+ " -content_name content " + ""
+        Popen(generate_command, shell=True, cwd=self.dir).wait()
 
         # copy back the result
         generated_list = os.listdir("generated")
         int_generated_list = [int(r.split(".")[0]) for r in generated_list] + [0]
         current_generated = max(int_generated_list) + 1
-        print(current_generated)
-        copy_back_command = "cp " + self.result_dir+"res_3_100.jpg " + "generated/"+str(current_generated)+".jpg"
-        print(copy_back_command)
-        #call(["cp", self.result_dir+"res_3_100.jpg", content_dir ])
-        copy_content_command = "cp " + content_name + "contents/"+str(current_generated)+".jpg"
+        result_name = "generated/"+str(current_generated)+".jpg"
+        copy_back_command = "cp " + self.result_dir+"res_3_100.jpg " + result_name
+        call(copy_back_command, shell=True)
+        # resize the image
+        resize_command = "convert -resize 1080x1350 " + result_name + " " + result_name
+        call(resize_command, shell=True)
+
+        copy_content_command = "cp " + content_name + " contents/"+str(current_generated)+".jpg"
+        call(copy_content_command, shell=True)
