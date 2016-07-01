@@ -1,47 +1,68 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>An HTML5 Slideshow w/ Canvas & jQuery | Tutorialzine Demo</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <!-- [if IE]>
+      <meta http-equiv="X-UA_Compatible" content="IE=edge,chrome=1">
+      <![endif]-->
 
-<link rel="stylesheet" type="text/css" href="static/styles.css" />
+    <link href="static/assets/css/bootstrap.css" rel="stylesheet" />
 
-<script type="text/javascript" src="{{ url_for('static', filename='socket.io.min.js') }}"></script>
-<script type="text/javascript" charset="utf-8">
-    var socket = io.connect('http://' + document.domain + ':' + location.port);
+    <script type="text/javascript" src="{{ url_for('static', filename='socket.io.min.js') }}"></script>
+    <script type="text/javascript" charset="utf-8">
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
 
-    socket.on("load page", function (filename) {
-      window.location.href = 'http://' + document.domain + ':' + location.port + '/' + filename;
-    });
+        socket.on("load page", function (filename) {
+          window.location.href = 'http://' + document.domain + ':' + location.port + '/' + filename;
+        });
 
-    // source is a unique representation of this page, data only used if necessary
-    function transition(source, data) {
-      socket.emit('transition event', {"source_name":source, "data":data});
-    };
-</script>
-
+        // source is a unique representation of this page, data only used if necessary
+        function transition(source, data) {
+          socket.emit('transition event', {"source_name":source, "data":data});
+        };
+    </script>
 </head>
+<body >
+<img src="static/imatges/paint2.png" style="width:100%;position:relative;top:0px;"> <!--class="img-responsive" alt="Responsive image"-->
+    <div class="container" style="position:absolute;top:35%;max-width: 66%;">
+        <div class="row text-center pad-top">
+            <div class="col-md-12"></div>
+        </div>
+        <div class="row ">
+            <div class="col-md-8 col-md-offset-7">
+                <div id="carousel-example" class="carousel slide" style="border:2px solid #e1e1e1;">
+                    <div class="carousel-inner">
+                  			<div class="item active"><img src="static/imatges/1.jpg" alt="" onClick="transition('index2.html', 1)"/></div>
+                  			<div class="item"><img src="static/imatges/2.jpg" alt="" onClick="transition('index2.html', 2)"/></div>
+                  			<div class="item"><img src="static/imatges/3.jpg" alt="" onClick="transition('index2.html', 3)"/></div>
+                  			<div class="item"><img src="static/imatges/4.jpg" alt="" onClick="transition('index2.html', 4)"/></div>
+                  			<div class="item"><img src="static/imatges/5.jpg" alt="" onClick="transition('index2.html', 5)"/></div>
+                  			<div class="item"><img src="static/imatges/6.jpg" alt="" onClick="transition('index2.html', 6)"/></div>
+                    </div>
+                    <!--PREVIUS-NEXT BUTTONS-->
+                     <a class="left carousel-control" href="#carousel-example" data-slide="prev">
+                       <span class="glyphicon glyphicon-chevron-left"></span>
+                    </a>
+                    <a class="right carousel-control" href="#carousel-example" data-slide="next">
+                      <span class="glyphicon glyphicon-chevron-right"></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<body>
-<div style="position:absolute; top:0px;">
-<img src="static/imatges/paint2.png" style="width:100%; height:100%;margin-top:0%;">
-<div id="slideshow">
 
-    <ul class="slides">
-	<li><a onClick="transition('index2.html', 1)"  href="index3.html"><img src="static/imatges/5.png" style="width:100%; height:100%; padding-left:11%; max-width: 100%, max-height: 100%" alt="meva"></a></li>
-        <li><a onClick="transition('index2.html', 2)" href="index3.html"><img src="static/imatges/1.jpg" style="width:100%; height:100%;padding-left: 11%;margin-top:4%;max-width: 100%; max-height: 100%;" alt="Marsa Alam" /></a></li>
-        <li><a onClick="transition('index2.html', 3)" href="index3.html"><img src="static/imatges/2.jpg" style="width:100%; height:100%;padding-left: 10%;max-width: 100%; max-height: 100%;"  alt="Turrimetta Beach" /></a></li>
-        <li><a onClick="transition('index2.html', 4)" href="index3.html"><img src="static/imatges/3.jpg" style="width:60%; height:60%;padding-left: 18%;max-width: 75%; max-height: 75%;"  alt="Power Station" /></a></li>
-        <li><a onClick="transition('index2.html', 5)" href="index3.html"><img src="static/imatges/1.jpg" style="width:100%; height:100%;padding-left: 10%;max-width: 100%; max-height: 100%;"  alt="Colors of Nature" /></a></li>
-    </ul>
-
-    <span class="arrow previous"></span>
-    <span class="arrow next"></span>
-</div>
-
-
-</div>
-<script src="static/jquery.min.js"></script>
-<script src="static/script.js"></script>
+    <!-- JAVASCRIPT FILES PLACED AT THE BOTTOM TO REDUCE THE LOADING TIME  -->
+    <!-- CORE JQUERY  -->
+    <script src="static/assets/plugins/jquery-1.10.2.js"></script>
+    <!-- BOOTSTRAP SCRIPTS  -->
+    <script src="static/assets/plugins/bootstrap.js"></script>
+    <!-- CUSTOM SCRIPTS -->
+    <script>
+        $('.carousel').carousel({
+            interval: false // 2000 //TIME IN MILLI SECONDS
+        })
+    </script>
 </body>
 </html>
